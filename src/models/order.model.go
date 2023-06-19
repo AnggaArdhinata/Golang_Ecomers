@@ -1,8 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"net/http"
+
 	"time"
 
 	db "github.com/AnggaArdhinata/indochat/src/configs"
@@ -94,12 +94,10 @@ func GetOrder() (Response, error) {
 	res.Message = "Success"
 	res.Data = arrOrderJoin
 
-	fmt.Println("get order berhasil!")
-
 	return res, nil
 }
 
-func PendingPayment() []string {
+func PendingPayment() ([]string, error) {
 
 	var order OrderJoin
 	var email []string
@@ -114,7 +112,7 @@ func PendingPayment() []string {
 	defer rows.Close()
 
 	if err != nil {
-		return nil
+		return email, nil
 	}
 
 	for rows.Next() {
@@ -123,5 +121,128 @@ func PendingPayment() []string {
 		email = append(email, order.Cust_Email)
 	}
 
-	return email
+	return email, nil
+}
+
+func GenerateCsv() (Response, error) {
+	var order OrderJoin
+	var arrOrder []OrderJoin
+	var res Response
+
+	con := db.CreateCon()
+
+	sqlStatement := `SELECT o.id AS order_id,
+    c.name AS customer_name,
+    TO_CHAR(o.created_at, 'Day-Mon-YYYY') AS order_date,
+    (SELECT SUM(DISTINCT p.price) AS total),
+    o.status
+FROM orders AS o 
+    INNER JOIN customer AS c ON o.cust_id = c.id
+    INNER JOIN product AS p ON O.product_id = p.id
+    GROUP BY o.id, c.name, p.id`
+
+	rows, err := con.Query(sqlStatement)
+	defer rows.Close()
+
+	if err != nil {
+		return res, nil
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&order.Id, &order.Cust_Name, &order.Order_Date, &order.Price, &order.Status)
+
+		arrOrder = append(arrOrder, order)
+	}
+
+	res.Status = http.StatusOK
+	res.Message = "succes"
+	res.Data = arrOrder
+
+	return res, nil
+
+}
+
+func StoreOrder(cust_id int, product_id int, discount_code string) (Response, error) {
+	var res Response
+
+	con := db.CreateCon()
+
+	sqlStatement := "INSERT INTO orders (cust_id, product_id, status, discount_code, created_at, updated_at) VALUES($1, $2, 'pending', $3, 'now()', 'now()');"
+
+	stmt, err := con.Prepare(sqlStatement)
+	if err != nil {
+		return res, err
+	}
+
+	stmt.Exec(cust_id, product_id, discount_code)
+	if err != nil {
+		return res, err
+	}
+
+	res.Status = http.StatusOK
+	res.Message = "Success"
+	res.Data = Msg{"order has created"}
+	return res, nil
+}
+
+func UpdateOrder(id int, cust_id int, product_id int, ispaid bool, status string, discount_order string) (Response, error) {
+	var res Response
+
+	con := db.CreateCon()
+
+	sqlStatement := "UPDATE orders SET cust_id= $1 , product_id= $2, ispaid= $3, status= $4, discount_code= $5, updated_at='now()' WHERE id= $6"
+
+	stmt, err := con.Prepare(sqlStatement)
+	if err != nil {
+		return res, err
+	}
+
+	result, err := stmt.Exec(cust_id, product_id, ispaid, status, discount_order, id)
+	if err != nil {
+		return res, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return res, err
+	}
+
+	res.Status = http.StatusOK
+	res.Message = "Success"
+	res.Data = map[string]int64{
+		"rows_affected": rowsAffected,
+	}
+
+	return res, nil
+}
+
+func DeleteOrder(id int) (Response, error) {
+	var res Response
+
+	con := db.CreateCon()
+
+	sqlStatement := "DELETE FROM orders WHERE id=$1"
+
+	stmt, err := con.Prepare(sqlStatement)
+	if err != nil {
+		return res, err
+	}
+
+	result, err := stmt.Exec(id)
+	if err != nil {
+		return res, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return res, err
+	}
+
+	res.Status = http.StatusOK
+	res.Message = "Success"
+	res.Data = map[string]int64{
+		"rows_affected": rowsAffected,
+	}
+
+	return res, nil
 }

@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: setsunaexia/gomers:1.0
+    container_name: go_container
+    env_file:
+      - .env
+    tty: true
+    ports:
+      - '6626:6625'
+    restart: on-failure
+    depends_on:
+      - pgdb
+    networks:
+      - godev
+
+  pgdb:
+    image: postgres:15.1-alpine
+    container_name: pg_container
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - '5431:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - godev
+
+volumes:
+  pg_data:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  godev:
+    driver: bridge

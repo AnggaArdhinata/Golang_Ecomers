@@ -11,7 +11,6 @@ type Product struct {
 	Id          int          `json:"id"`
 	Name        string       `json:"name"`
 	Category_Id int          `json:"category_id"`
-	Categories  []Categories `json:"categories"`
 	Price       int          `json:"price"`
 	Description string       `json:"description"`
 	Image       string       `json:"image"`
@@ -24,28 +23,21 @@ func StoreProduct(name string, category_id int, price int, description string, i
 
 	con := db.CreateCon()
 
-	sqlStatement := "INSERT INTO product (name, category_id, price, description, image, created_at, updated_at) VALUES(?, ?, ?, ?, ?, 'now()', 'now()')"
+	sqlStatement := "INSERT INTO product (name, category_id, price, description, image, created_at, updated_at) VALUES($1, $2, $3, $4, $5, 'now()', 'now()')"
 
 	stmt, err := con.Prepare(sqlStatement)
 	if err != nil {
 		return res, err
 	}
 
-	result, err := stmt.Exec(name, category_id, price, description, image)
-	if err != nil {
-		return res, err
-	}
-
-	lastInsertedId, err := result.LastInsertId()
+	stmt.Exec(name, category_id, price, description, image)
 	if err != nil {
 		return res, err
 	}
 
 	res.Status = http.StatusOK
 	res.Message = "Success"
-	res.Data = map[string]int{
-		"last_inserted_id": int(lastInsertedId),
-	}
+	res.Data = Msg{"successfully add product"}
 
 	return res, nil
 }
@@ -57,7 +49,7 @@ func GetAllProduct() (Response, error) {
 
 	con := db.CreateCon()
 
-	sqlStatement := "SELECT * FROM product"
+	sqlStatement := "SELECT * FROM product ORDER BY id DESC"
 
 	rows, err := con.Query(sqlStatement)
 	defer rows.Close()
@@ -88,7 +80,7 @@ func UpdateProduct(id int, name string, category_id int, price int, description 
 
 	con := db.CreateCon()
 
-	sqlStatement := "UPDATE product SET name= ?, category_id= ?, price= ?, description= ?,image= ?, updated_at='now()' WHERE id= ?"
+	sqlStatement := "UPDATE product SET name= $1, category_id= $2, price= $3, description= $4, image= $5, updated_at='now()' WHERE id= $6"
 
 	stmt, err := con.Prepare(sqlStatement)
 	if err != nil {
@@ -119,7 +111,7 @@ func DeleteProduct(id int) (Response, error) {
 
 	con := db.CreateCon()
 
-	sqlStatement := "DELETE FROM product WHERE id=?"
+	sqlStatement := "DELETE FROM product WHERE id=$1"
 
 	stmt, err := con.Prepare(sqlStatement)
 	if err != nil {

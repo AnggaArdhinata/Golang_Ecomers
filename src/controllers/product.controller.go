@@ -44,7 +44,7 @@ func GetAllProduct(c echo.Context) error {
 }
 
 func UpdateProduct(c echo.Context) error {
-	str_id := c.FormValue("id")
+	str_id := c.Param("id")
 	name := c.FormValue("name")
 	str_category_id := c.FormValue("category_id")
 	str_price := c.FormValue("price")

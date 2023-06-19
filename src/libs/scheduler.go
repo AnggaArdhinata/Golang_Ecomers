@@ -1,6 +1,7 @@
 package libs
 
 import (
+	
 	"time"
 
 	"github.com/AnggaArdhinata/indochat/src/models"
@@ -10,7 +11,10 @@ import (
 
 func Scheduler() {
 
-	email := models.PendingPayment()
+	email, err := models.PendingPayment()
+	if err != nil {
+		return
+	}
 
 	jakartaTime, _ := time.LoadLocation("Asia/Jakarta")
 	scheduler := cron.New(cron.WithLocation(jakartaTime))

@@ -6,3 +6,6 @@
 
 --SELECT
 -- SELECT * FROM categories
+
+--UPDATE CATEGORY
+UPDATE categories SET name='food', updated_at='now()' WHERE id= 1
