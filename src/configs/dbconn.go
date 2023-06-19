@@ -14,13 +14,18 @@ var db *sql.DB
 
 var err error
 
-func Init()  {
+func Init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error loading .env file")
 	}
 
-	dbConfig := "user="+os.Getenv("DB_USER")+" password="+os.Getenv("DB_PASSWORD")+" dbname="+os.Getenv("DB_NAME")+" sslmode=disable"
+	dbConfig := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_NAME"))
 
 	db, err = sql.Open("postgres", dbConfig)
 	if err != nil {
@@ -35,6 +40,6 @@ func Init()  {
 	}
 }
 
-func CreateCon()  *sql.DB {
+func CreateCon() *sql.DB {
 	return db
 }
