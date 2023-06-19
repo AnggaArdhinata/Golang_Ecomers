@@ -24,6 +24,13 @@ go get -u ./...
 3. Database Setup
 Unfortunately this App does not support migration, you must create database manually, in this case, i using Postgresql, and then you can run Sql statement on sql file, that called INIT_DATABASE.
 
+This is ERD of this app
+
+<div align="left">
+  <a href="https://lectronic.myvehicle-rent.site/">
+    <img src="./assets/icon/erd-gomers.png" alt="Logo" width="80" height="80">
+  </a>
+
 4. Environment Variables
 First of all you can rename .env_example with .env, and then you can replace the configuration with your own configuration.
 
