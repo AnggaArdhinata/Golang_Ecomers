@@ -1,6 +1,7 @@
 # Simple Golang Ecommers
 
 Hello, welcome to my repository.
+This is backend golang app, Build with Echo framework.
 
 ## 🔥 Showcase
 - [Live-Project](link)
