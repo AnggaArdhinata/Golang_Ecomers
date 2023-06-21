@@ -8,7 +8,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SendEmail(email []models.EmailInfo) error {
+func SendEmail(payload []models.OrderPayload) error {
 
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
@@ -16,13 +16,13 @@ func SendEmail(email []models.EmailInfo) error {
 	var CONFIG_AUTH_EMAIL = os.Getenv("GOMAIL_EMAIL")
 	var CONFIG_AUTH_PASSWORD = os.Getenv("GOMAIL_PASS")
 
-	for _, mail := range email {
+	for _, mail := range payload {
 
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("Subject", "Reminder Pending Payment")
 		mailer.SetHeader("From", CONFIG_SENDER_NAME)
 		mailer.SetHeader("To", mail.Email)
-		mailer.SetBody("text/html", "Hello, "+mail.Name+" have order: "+mail.Product)
+		mailer.SetBody("text/html", "Hello, "+mail.Name+", you have order: "+mail.Product)
 
 		dialer := gomail.NewDialer(
 			CONFIG_SMTP_HOST,
@@ -30,7 +30,6 @@ func SendEmail(email []models.EmailInfo) error {
 			CONFIG_AUTH_EMAIL,
 			CONFIG_AUTH_PASSWORD,
 		)
-		
 
 		err := dialer.DialAndSend(mailer)
 		if err != nil {

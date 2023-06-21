@@ -1,19 +1,17 @@
 package libs
 
 import (
-	
 	"time"
 
 	"github.com/AnggaArdhinata/indochat/src/models"
 	"github.com/robfig/cron/v3"
 )
 
+func Scheduler() error {
 
-func Scheduler() {
-
-	email, err := models.PendingPayment()
+	user, err := models.PendingPayment()
 	if err != nil {
-		return
+		return err
 	}
 
 	jakartaTime, _ := time.LoadLocation("Asia/Jakarta")
@@ -24,8 +22,9 @@ func Scheduler() {
 	// Scheduler for send email every 23.50
 	// scheduler.AddFunc("50 23 * * *", func() { SendEmail(email) })
 
-	scheduler.AddFunc("05 22 * * *", func() { SendEmail(email) })
+	scheduler.AddFunc("05 22 * * *", func() { SendEmail(user) })
 
 	go scheduler.Start()
 
+	return nil
 }

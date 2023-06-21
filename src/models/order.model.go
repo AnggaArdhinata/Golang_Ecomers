@@ -97,17 +97,16 @@ func GetOrder() (Response, error) {
 	return res, nil
 }
 
-type EmailInfo struct {
-	Email string
-	Name string
+type OrderPayload struct {
+	Email   string
+	Name    string
 	Product string
-
 }
 
-func PendingPayment() ([]EmailInfo, error) {
+func PendingPayment() ([]OrderPayload, error) {
 
 	var order OrderJoin
-	var data []EmailInfo
+	var data []OrderPayload
 
 	con := db.CreateCon()
 
@@ -125,7 +124,7 @@ func PendingPayment() ([]EmailInfo, error) {
 	for rows.Next() {
 		err = rows.Scan(&order.Id, &order.Cust_Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name, &order.IsPaid)
 
-		data = append(data, EmailInfo{Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name})
+		data = append(data, OrderPayload{Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name})
 	}
 
 	return data, nil
