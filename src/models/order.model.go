@@ -97,10 +97,17 @@ func GetOrder() (Response, error) {
 	return res, nil
 }
 
-func PendingPayment() ([]string, error) {
+type EmailInfo struct {
+	Email string
+	Name string
+	Product string
+
+}
+
+func PendingPayment() ([]EmailInfo, error) {
 
 	var order OrderJoin
-	var email []string
+	var data []EmailInfo
 
 	con := db.CreateCon()
 
@@ -112,16 +119,16 @@ func PendingPayment() ([]string, error) {
 	defer rows.Close()
 
 	if err != nil {
-		return email, nil
+		return data, nil
 	}
 
 	for rows.Next() {
 		err = rows.Scan(&order.Id, &order.Cust_Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name, &order.IsPaid)
 
-		email = append(email, order.Cust_Email)
+		data = append(data, EmailInfo{Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name})
 	}
 
-	return email, nil
+	return data, nil
 }
 
 func GenerateCsv() (Response, error) {

@@ -22,7 +22,9 @@ func Scheduler() {
 	defer scheduler.Stop()
 
 	// Scheduler for send email every 23.50
-	scheduler.AddFunc("50 23 * * *", func() { SendEmail(email) })
+	// scheduler.AddFunc("50 23 * * *", func() { SendEmail(email) })
+
+	scheduler.AddFunc("05 22 * * *", func() { SendEmail(email) })
 
 	go scheduler.Start()
 

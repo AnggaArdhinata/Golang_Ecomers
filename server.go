@@ -1,8 +1,9 @@
 package main
 
 import (
+	_ "github.com/joho/godotenv/autoload"
+
 	db "github.com/AnggaArdhinata/indochat/src/configs"
-	// "github.com/AnggaArdhinata/indochat/src/models"
 
 	"github.com/AnggaArdhinata/indochat/src/libs"
 
@@ -12,8 +13,6 @@ import (
 func main() {
 
 	db.Init()
-
-	// fmt.Println(models.GenerateCsv())
 
 	libs.Scheduler()
 

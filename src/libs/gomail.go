@@ -4,16 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/AnggaArdhinata/indochat/src/models"
 	"gopkg.in/gomail.v2"
 )
 
-func SendEmail(email []string) error {
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("error loading .env file")
-	}
+func SendEmail(email []models.EmailInfo) error {
 
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
@@ -26,8 +21,8 @@ func SendEmail(email []string) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("Subject", "Reminder Pending Payment")
 		mailer.SetHeader("From", CONFIG_SENDER_NAME)
-		mailer.SetHeader("To", mail)
-		mailer.SetBody("text/html", "Hello, You have order pending payment order Click Link Bellow to Complete your payment")
+		mailer.SetHeader("To", mail.Email)
+		mailer.SetBody("text/html", "Hello, "+mail.Name+" have order: "+mail.Product)
 
 		dialer := gomail.NewDialer(
 			CONFIG_SMTP_HOST,
@@ -35,8 +30,9 @@ func SendEmail(email []string) error {
 			CONFIG_AUTH_EMAIL,
 			CONFIG_AUTH_PASSWORD,
 		)
+		
 
-		dialer.DialAndSend(mailer)
+		err := dialer.DialAndSend(mailer)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
