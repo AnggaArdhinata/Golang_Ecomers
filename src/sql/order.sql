@@ -52,3 +52,35 @@
 -- SELECT SUM(p.price) AS total
 -- FROM orders AS o
 -- INNER JOIN product AS p ON O.product_id = p.id
+
+-- SELECT o.id, c.id AS cust_id, c.name, c.email, p.name AS product, p.price AS price ,o.ispaid FROM orders AS o
+-- 	INNER JOIN customer AS c ON o.cust_id = c.id
+-- 	INNER JOIN product AS p ON O.product_id = p.id WHERE o.ispaid=false
+
+-- SELECT * FROM orders;
+
+-- UPDATE orders SET ispaid='true', status='paid' WHERE id=12
+
+
+SELECT 
+	o.id AS order_id,
+    cust_id,
+    c.name AS customer_name,
+	c.email AS customer_email,
+    p.name AS product_name,
+    p.description,
+    CASE
+        WHEN discount_code = 'IC042'
+        AND cat.name = 'electronic' THEN price - (price * 5 / 100)
+        WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
+        WHEN discount_code = 'IC015' 
+        AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
+        ELSE price
+    END AS final_price,
+    ispaid
+	FROM orders AS o
+    INNER JOIN customer AS c ON o.cust_id = c.id
+    INNER JOIN product AS p ON O.product_id = p.id
+    INNER JOIN categories AS cat ON p.category_id = cat.id
+    WHERE o.ispaid = FALSE
+	ORDER BY o.id DESC

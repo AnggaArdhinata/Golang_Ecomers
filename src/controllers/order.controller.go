@@ -40,6 +40,23 @@ func StoreOrder(c echo.Context) error {
 
 }
 
+func UpdatePayment(c echo.Context) error {
+	str_id := c.Param("id")
+
+	id, err := strconv.Atoi(str_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	result, err := models.VerifyOrder(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, result)
+
+}
+
 func UpdateOrder(c echo.Context) error {
 	str_id := c.Param("id")
 	str_cust_id := c.FormValue("cust_id")

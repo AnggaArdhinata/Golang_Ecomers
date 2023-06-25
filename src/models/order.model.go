@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 
 	"time"
@@ -25,6 +26,7 @@ type OrderJoin struct {
 	Cust_Name     string    `json:"customer_name"`
 	Cust_Email    string    `json:"customer_email"`
 	Product_Name  string    `json:"product_name"`
+	Description   string    `json:"description"`
 	Category      string    `json:"category"`
 	Price         int       `json:"price"`
 	Discount_Code string    `json:"discount_code"`
@@ -98,9 +100,12 @@ func GetOrder() (Response, error) {
 }
 
 type OrderPayload struct {
-	Email   string
-	Name    string
-	Product string
+	Id          int
+	Email       string
+	Name        string
+	Product     string
+	Description string
+	Price       int
 }
 
 func PendingPayment() ([]OrderPayload, error) {
@@ -110,9 +115,27 @@ func PendingPayment() ([]OrderPayload, error) {
 
 	con := db.CreateCon()
 
-	sqlStatement := `SELECT o.id, c.id AS cust_id, c.name, c.email, p.name AS product ,o.ispaid FROM orders AS o
-	INNER JOIN customer AS c ON o.cust_id = c.id
-	INNER JOIN product AS p ON O.product_id = p.id WHERE o.ispaid=false`
+	sqlStatement := `SELECT 
+	o.id AS order_id,
+    c.name AS customer_name,
+	c.email AS customer_email,
+    p.name AS product_name,
+    p.description,
+    CASE
+        WHEN discount_code = 'IC042'
+        AND cat.name = 'electronic' THEN price - (price * 5 / 100)
+        WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
+        WHEN discount_code = 'IC015' 
+        AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
+        ELSE price
+    END AS final_price,
+    ispaid
+	FROM orders AS o
+    INNER JOIN customer AS c ON o.cust_id = c.id
+    INNER JOIN product AS p ON O.product_id = p.id
+    INNER JOIN categories AS cat ON p.category_id = cat.id
+    WHERE o.ispaid = FALSE
+	ORDER BY o.id DESC`
 
 	rows, err := con.Query(sqlStatement)
 	defer rows.Close()
@@ -122,50 +145,36 @@ func PendingPayment() ([]OrderPayload, error) {
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&order.Id, &order.Cust_Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name, &order.IsPaid)
+		err = rows.Scan(&order.Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name, &order.Description, &order.Final_Price, &order.IsPaid)
 
-		data = append(data, OrderPayload{Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name})
+		data = append(data, OrderPayload{Id: order.Id, Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name, Description: order.Description, Price: order.Final_Price})
 	}
 
 	return data, nil
 }
 
-func GenerateCsv() (Response, error) {
-	var order OrderJoin
-	var arrOrder []OrderJoin
+func VerifyOrder(id int) (Response, error) {
 	var res Response
 
 	con := db.CreateCon()
 
-	sqlStatement := `SELECT o.id AS order_id,
-    c.name AS customer_name,
-    TO_CHAR(o.created_at, 'Day-Mon-YYYY') AS order_date,
-    (SELECT SUM(DISTINCT p.price) AS total),
-    o.status
-FROM orders AS o 
-    INNER JOIN customer AS c ON o.cust_id = c.id
-    INNER JOIN product AS p ON O.product_id = p.id
-    GROUP BY o.id, c.name, p.id`
+	sqlStatement := "UPDATE orders SET ispaid='true', status='paid' WHERE id= $1"
 
-	rows, err := con.Query(sqlStatement)
-	defer rows.Close()
-
+	stmt, err := con.Prepare(sqlStatement)
 	if err != nil {
-		return res, nil
+		return res, err
 	}
 
-	for rows.Next() {
-		err = rows.Scan(&order.Id, &order.Cust_Name, &order.Order_Date, &order.Price, &order.Status)
-
-		arrOrder = append(arrOrder, order)
+	stmt.Exec(id)
+	if  err != nil {
+		return res, err
 	}
 
 	res.Status = http.StatusOK
-	res.Message = "succes"
-	res.Data = arrOrder
+	res.Message = "Success"
+	res.Data = Msg{"successful paying for the product"}
 
 	return res, nil
-
 }
 
 func StoreOrder(cust_id int, product_id int, discount_code string) (Response, error) {
@@ -184,10 +193,10 @@ func StoreOrder(cust_id int, product_id int, discount_code string) (Response, er
 	if err != nil {
 		return res, err
 	}
-
 	res.Status = http.StatusOK
 	res.Message = "Success"
 	res.Data = Msg{"order has created"}
+	fmt.Println("Order Created")
 	return res, nil
 }
 
@@ -252,3 +261,41 @@ func DeleteOrder(id int) (Response, error) {
 
 	return res, nil
 }
+
+// func GenerateCsv() (Response, error) {
+// 	var order OrderJoin
+// 	var arrOrder []OrderJoin
+// 	var res Response
+
+// 	con := db.CreateCon()
+
+// 	sqlStatement := `SELECT o.id AS order_id,
+//     c.name AS customer_name,
+//     TO_CHAR(o.created_at, 'Day-Mon-YYYY') AS order_date,
+//     (SELECT SUM(DISTINCT p.price) AS total),
+//     o.status
+// FROM orders AS o
+//     INNER JOIN customer AS c ON o.cust_id = c.id
+//     INNER JOIN product AS p ON O.product_id = p.id
+//     GROUP BY o.id, c.name, p.id`
+
+// 	rows, err := con.Query(sqlStatement)
+// 	defer rows.Close()
+
+// 	if err != nil {
+// 		return res, nil
+// 	}
+
+// 	for rows.Next() {
+// 		err = rows.Scan(&order.Id, &order.Cust_Name, &order.Order_Date, &order.Price, &order.Status)
+
+// 		arrOrder = append(arrOrder, order)
+// 	}
+
+// 	res.Status = http.StatusOK
+// 	res.Message = "succes"
+// 	res.Data = arrOrder
+
+// 	return res, nil
+
+// }

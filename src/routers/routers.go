@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/AnggaArdhinata/indochat/src/controllers"
+	"github.com/AnggaArdhinata/indochat/src/middlewares"
 
 	"github.com/labstack/echo/v4"
 )
@@ -12,6 +13,11 @@ func Init() *echo.Echo {
 	e := echo.New()
 
 	api := e.Group("api/v1")
+	
+	product := api.Group("/product", middlewares.RateLimit)
+	order := api.Group("/order", middlewares.RateLimit)
+	customer := api.Group("/customer", middlewares.RateLimit)
+	category := api.Group("/category", middlewares.RateLimit)
 
 	api.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to Golang Back-End APP")
@@ -19,28 +25,29 @@ func Init() *echo.Echo {
 	})
 
 	//? Product End Point
-	api.GET("/product", controllers.GetAllProduct)
-	api.POST("/product", controllers.StoreProduct)
-	api.PUT("/product/:id", controllers.UpdateProduct)
-	api.DELETE("/product/:id", controllers.DeleteProduct)
+	product.GET("", controllers.GetAllProduct)
+	product.POST("", controllers.StoreProduct)
+	product.PUT("/:id", controllers.UpdateProduct)
+	product.DELETE("/:id", controllers.DeleteProduct)
 
-	//? Order End Point
-	api.GET("/order", controllers.GetOrder)
-	api.POST("/order", controllers.StoreOrder)
-	api.PUT("/order/:id", controllers.UpdateOrder)
-	api.DELETE("/order/:id", controllers.DeleteOrder)
+	//? Order End Pointcustomer
+	order.GET("", controllers.GetOrder)
+	order.POST("", controllers.StoreOrder)
+	order.PUT("/:id", controllers.UpdateOrder)
+	order.GET("/verify/:id", controllers.UpdatePayment)
+	order.DELETE("/:id", controllers.DeleteOrder)
 
 	//? Customer End Point
-	api.GET("/customer", controllers.GetAllCustomer)
-	api.POST("/customer", controllers.StoreCustomer)
-	api.PUT("/customer/:id", controllers.UpdateCustomer)
-	api.DELETE("/customer/:id", controllers.DeleteCustomer)
+	customer.GET("", controllers.GetAllCustomer)
+	customer.POST("", controllers.StoreCustomer)
+	customer.PUT("/:id", controllers.UpdateCustomer)
+	customer.DELETE("/:id", controllers.DeleteCustomer)
 
 	//? Category End Point
-	api.GET("/category", controllers.GetAllCategory)
-	api.POST("/category", controllers.StoreCategory)
-	api.PUT("/category/:id", controllers.UpdateCategory)
-	api.DELETE("/category/:id", controllers.DeleteCategory)
+	category.GET("", controllers.GetAllCategory)
+	category.POST("", controllers.StoreCategory)
+	category.PUT("/:id", controllers.UpdateCategory)
+	category.DELETE("/:id", controllers.DeleteCategory)
 
 	return e
 }
