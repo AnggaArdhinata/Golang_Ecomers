@@ -36,7 +36,7 @@ func Init() {
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println("database connected . .")
+		log.Println("database connected . .")
 	}
 }
 

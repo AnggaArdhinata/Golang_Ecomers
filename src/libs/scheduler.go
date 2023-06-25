@@ -22,7 +22,7 @@ func Scheduler() error {
 	// Scheduler for send email every 23.50
 	// scheduler.AddFunc("50 23 * * *", func() { SendEmail(email) })
 
-	scheduler.AddFunc("*/2 * * * *", func() { MakeEmail(user) })
+	scheduler.AddFunc("*/2 * * * *", func() { SendEmail(user) })
 
 	go scheduler.Start()
 

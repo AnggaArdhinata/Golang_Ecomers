@@ -77,10 +77,9 @@ SELECT
         AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
         ELSE price
     END AS final_price,
-    ispaid
+    status
 	FROM orders AS o
     INNER JOIN customer AS c ON o.cust_id = c.id
     INNER JOIN product AS p ON O.product_id = p.id
     INNER JOIN categories AS cat ON p.category_id = cat.id
-    WHERE o.ispaid = FALSE
 	ORDER BY o.id DESC

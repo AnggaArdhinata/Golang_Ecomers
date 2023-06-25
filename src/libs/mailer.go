@@ -10,19 +10,18 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func MakeEmail(payload []models.OrderPayload) error {
+func SendEmail(payload []models.OrderPayload) error {
 
 	const CONFIG_SMTP_HOST = "smtp.gmail.com"
 	const CONFIG_SMTP_PORT = 587
-	var CONFIG_SENDER_NAME = os.Getenv("GOMAIL_SENDER_NAME")
 	var CONFIG_AUTH_EMAIL = os.Getenv("GOMAIL_EMAIL")
 	var CONFIG_AUTH_PASSWORD = os.Getenv("GOMAIL_PASS")
 
 	h := hermes.Hermes{
 		Product: hermes.Product{
-			Name: os.Getenv("COMPANY_NAME"),
-			Link: "https://gocomers.apisetsuna.site/api/v1/",
-			Logo: "https://mailtrap.io/wp-content/uploads/2019/08/How-to-Send-and-Receive-Emails-with-Go_Featured-Image.png",
+			Name:      os.Getenv("COMPANY_NAME"),
+			Link:      os.Getenv("BASE_URL"),
+			Logo:      "https://mailtrap.io/wp-content/uploads/2019/08/How-to-Send-and-Receive-Emails-with-Go_Featured-Image.png",
 			Copyright: "Copyright © 2023 Ardhinata Corp. All rights reserved.",
 		},
 	}
@@ -42,7 +41,7 @@ func MakeEmail(payload []models.OrderPayload) error {
 				Dictionary: []hermes.Entry{
 					{Key: "Product", Value: mail.Product},
 					{Key: "Description", Value: mail.Description},
-					{Key: "Price", Value: "Rp. "+price},
+					{Key: "Price", Value: "Rp. " + price},
 				},
 				Actions: []hermes.Action{
 					{
@@ -50,7 +49,7 @@ func MakeEmail(payload []models.OrderPayload) error {
 						Button: hermes.Button{
 							Color: "#22BC66", // Optional action button color
 							Text:  "Confirm your payment",
-							Link:  "http://localhost:6625/api/v1/order/verify/" + id,
+							Link:  os.Getenv("BASE_URL")+"api/v1/order/verify/" + id,
 						},
 					},
 				},
@@ -59,10 +58,13 @@ func MakeEmail(payload []models.OrderPayload) error {
 				},
 			},
 		})
+		if err != nil {
+			return err
+		}
 
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("Subject", "[REMINDER] You Have Pending Payment !")
-		mailer.SetHeader("From", CONFIG_SENDER_NAME)
+		mailer.SetHeader("From", os.Getenv("GOMAIL_SENDER_NAME"))
 		mailer.SetHeader("To", mail.Email)
 		mailer.SetBody("text/html", emailBody)
 
@@ -73,12 +75,12 @@ func MakeEmail(payload []models.OrderPayload) error {
 			CONFIG_AUTH_PASSWORD,
 		)
 
-		dialer.DialAndSend(mailer)
+		err = dialer.DialAndSend(mailer)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 
-		log.Println("Mail sent to: "+mail.Email)
+		log.Println("Mail sent to: " + mail.Email)
 	}
 
 	return nil
