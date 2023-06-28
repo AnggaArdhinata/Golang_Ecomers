@@ -12,17 +12,17 @@ import (
 func Init() *echo.Echo {
 	e := echo.New()
 
-	api := e.Group("api/v1")
-	
-	product := api.Group("/product", middlewares.RateLimit)
-	order := api.Group("/order", middlewares.RateLimit)
-	customer := api.Group("/customer", middlewares.RateLimit)
-	category := api.Group("/category", middlewares.RateLimit)
+	api := e.Group("api/v1", middlewares.RateLimit)
 
 	api.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to Golang Back-End APP")
 
 	})
+	
+	product := api.Group("/product")
+	order := api.Group("/order")
+	customer := api.Group("/customer")
+	category := api.Group("/category")
 
 	//? Product End Point
 	product.GET("", controllers.GetAllProduct)
@@ -39,9 +39,11 @@ func Init() *echo.Echo {
 
 	//? Customer End Point
 	customer.GET("", controllers.GetAllCustomer)
+	customer.GET("/email", controllers.GetByEmail)
 	customer.POST("", controllers.StoreCustomer)
 	customer.PUT("/:id", controllers.UpdateCustomer)
 	customer.DELETE("/:id", controllers.DeleteCustomer)
+	customer.DELETE("/delete", controllers.DeleteCustomerByEmail)
 
 	//? Category End Point
 	category.GET("", controllers.GetAllCategory)

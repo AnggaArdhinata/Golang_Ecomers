@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: setsunaexia/gocomers-test
+    image: setsunaexia/test:1.0
     container_name: go_container
     env_file:
       - .env
@@ -12,11 +12,29 @@ services:
     ports:
       - '6626:6625'
     restart: on-failure
-
+    depends_on:
+      - pgdb
     networks:
-      - bridge
+      - gonet
+
+
+  pgdb:
+    image: postgres:15-alpine
+    container_name: pg_container
+    environment:
+      - POSTGRES_PASSWORD=angga123
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=golangdb
+    ports:
+      - '5431:5432'
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - pgdata:/var/lib/postgresql/data
+    networks:
+      - gonet
+
 
 # Networks to be created to facilitate communication between containers
 networks:
-  bridge:
+  gonet:
     driver: bridge

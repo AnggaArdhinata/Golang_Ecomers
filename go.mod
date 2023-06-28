@@ -19,6 +19,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/aokoli/goutils v1.1.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
+	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -31,6 +32,7 @@ require (
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
+	github.com/leekchan/accounting v1.0.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/matcornic/hermes/v2 v2.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -40,8 +42,10 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/mrwaggel/golimiter v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

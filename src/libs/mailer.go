@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/AnggaArdhinata/indochat/src/models"
+	"github.com/leekchan/accounting"
 	"github.com/matcornic/hermes/v2"
 	"gopkg.in/gomail.v2"
 )
@@ -26,22 +27,23 @@ func SendEmail(payload []models.OrderPayload) error {
 		},
 	}
 
-	for _, mail := range payload {
+	for _, user := range payload {
 
-		price := strconv.Itoa(mail.Price)
+		ac := accounting.Accounting{Symbol: "Rp. ", Precision: 2, Thousand: ".", Decimal: ","}
+		price := ac.FormatMoney(user.Price)
 
-		id := strconv.Itoa(mail.Id)
+		id := strconv.Itoa(user.Id)
 
 		emailBody, err := h.GenerateHTML(hermes.Email{
 			Body: hermes.Body{
-				Name: mail.Name,
+				Name: user.Name,
 				Intros: []string{
 					"Thankyou for purchasing our product, here are the details of your order.",
 				},
 				Dictionary: []hermes.Entry{
-					{Key: "Product", Value: mail.Product},
-					{Key: "Description", Value: mail.Description},
-					{Key: "Price", Value: "Rp. " + price},
+					{Key: "Product", Value: user.Product},
+					{Key: "Description", Value: user.Description},
+					{Key: "Price", Value: price},
 				},
 				Actions: []hermes.Action{
 					{
@@ -49,7 +51,7 @@ func SendEmail(payload []models.OrderPayload) error {
 						Button: hermes.Button{
 							Color: "#22BC66", // Optional action button color
 							Text:  "Confirm your payment",
-							Link:  os.Getenv("BASE_URL")+"api/v1/order/verify/" + id,
+							Link:  os.Getenv("BASE_URL") + "api/v1/order/verify/" + id,
 						},
 					},
 				},
@@ -65,7 +67,7 @@ func SendEmail(payload []models.OrderPayload) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("Subject", "[REMINDER] You Have Pending Payment !")
 		mailer.SetHeader("From", os.Getenv("GOMAIL_SENDER_NAME"))
-		mailer.SetHeader("To", mail.Email)
+		mailer.SetHeader("To", user.Email)
 		mailer.SetBody("text/html", emailBody)
 
 		dialer := gomail.NewDialer(
@@ -80,7 +82,7 @@ func SendEmail(payload []models.OrderPayload) error {
 			log.Fatal(err.Error())
 		}
 
-		log.Println("Mail sent to: " + mail.Email)
+		log.Println("Mail sent to: " + user.Email)
 	}
 
 	return nil

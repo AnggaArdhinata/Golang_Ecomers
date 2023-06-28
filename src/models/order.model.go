@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"time"
@@ -51,17 +51,18 @@ func GetOrder() (Response, error) {
     c.name AS customer_name,
 	c.email AS customer_email,
     p.name AS product_name,
+	p.description,
     cat.name AS category,
     price,
     o.discount_code,
-    CASE
-        WHEN discount_code = 'IC042'
-        AND cat.name = 'electronic' THEN price - (price * 5 / 100)
-        WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
-        WHEN discount_code = 'IC015' 
-        AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
-        ELSE price
-    END AS final_price,
+		CASE
+			WHEN discount_code = 'IC042'
+			AND cat.name = 'electronic' THEN price - (price * 5 / 100)
+			WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
+			WHEN discount_code = 'IC015' 
+			AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
+			ELSE price
+		END AS final_price,
     o.status,
     ispaid,
     TO_CHAR(o.created_at, 'Day-Mon-YYYY') AS order_date,
@@ -82,7 +83,7 @@ func GetOrder() (Response, error) {
 
 	for rows.Next() {
 		err = rows.Scan(&order.Id, &order.Cust_Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name,
-			&order.Category, &order.Price, &order.Discount_Code, &order.Final_Price,
+			&order.Description, &order.Category, &order.Price, &order.Discount_Code, &order.Final_Price,
 			&order.Status, &order.IsPaid, &order.Order_Date, &order.Created_At, &order.Updated_At)
 
 		if err != nil {
@@ -108,7 +109,7 @@ type OrderPayload struct {
 	Price       int
 }
 
-func PendingPayment() ([]OrderPayload, error) {
+func PendingPayment() ([]OrderPayload) {
 
 	var order OrderJoin
 	var data []OrderPayload
@@ -121,14 +122,14 @@ func PendingPayment() ([]OrderPayload, error) {
 	c.email AS customer_email,
     p.name AS product_name,
     p.description,
-    CASE
-        WHEN discount_code = 'IC042'
-        AND cat.name = 'electronic' THEN price - (price * 5 / 100)
-        WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
-        WHEN discount_code = 'IC015' 
-        AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
-        ELSE price
-    END AS final_price,
+		CASE
+			WHEN discount_code = 'IC042'
+			AND cat.name = 'electronic' THEN price - (price * 5 / 100)
+			WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
+			WHEN discount_code = 'IC015' 
+			AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
+			ELSE price
+		END AS final_price,
     ispaid
 	FROM orders AS o
     INNER JOIN customer AS c ON o.cust_id = c.id
@@ -141,7 +142,7 @@ func PendingPayment() ([]OrderPayload, error) {
 	defer rows.Close()
 
 	if err != nil {
-		return data, nil
+		log.Println(err)
 	}
 
 	for rows.Next() {
@@ -149,8 +150,7 @@ func PendingPayment() ([]OrderPayload, error) {
 
 		data = append(data, OrderPayload{Id: order.Id, Email: order.Cust_Email, Name: order.Cust_Name, Product: order.Product_Name, Description: order.Description, Price: order.Final_Price})
 	}
-
-	return data, nil
+	return data
 }
 
 func VerifyOrder(id int) (Response, error) {
@@ -172,7 +172,7 @@ func VerifyOrder(id int) (Response, error) {
 
 	res.Status = http.StatusOK
 	res.Message = "Success"
-	res.Data = Msg{"successful paying for the product"}
+	res.Data = Msg{"successfully purchase the product"}
 
 	return res, nil
 }
@@ -196,7 +196,6 @@ func StoreOrder(cust_id int, product_id int, discount_code string) (Response, er
 	res.Status = http.StatusOK
 	res.Message = "Success"
 	res.Data = Msg{"order has created"}
-	fmt.Println("Order Created")
 	return res, nil
 }
 

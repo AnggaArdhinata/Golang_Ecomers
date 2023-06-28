@@ -13,6 +13,10 @@ func StoreCustomer(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
+	res, err := models.GetCustomerByEmail(email)
+	if res.Status == 200 {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "email already registered !"})
+	}
 	result, err := models.StoreCustomer(name, email, password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -26,6 +30,18 @@ func GetAllCustomer(c echo.Context) error {
 	result, err := models.GetAllCustomer()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func GetByEmail(c echo.Context) error {
+
+	email := c.QueryParam("email")
+
+	result, err := models.GetCustomerByEmail(email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "email not found !"})
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -59,6 +75,21 @@ func DeleteCustomer(c echo.Context) error {
 	}
 
 	result, err := models.DeleteCustomer(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func DeleteCustomerByEmail(c echo.Context) error {
+	email := c.QueryParam("email")
+
+	checkEmail, err := models.GetCustomerByEmail(email)
+	if checkEmail.Status != 200 {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "email not found !"})
+	}
+	result, err := models.DeleteByEmail(email)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}

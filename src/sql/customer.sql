@@ -11,6 +11,12 @@
 
 -- DELETE FROM customer WHERE id=4
 
-SHOW TIMEZONE;
+-- SHOW TIMEZONE;
 
 -- SET TIMEZONE ='Asia/Jakarta';
+
+-- SELECT * FROM customer
+
+-- SELECT * FROM customer WHERE email LIKE 'ardhinataanggagmil.com'
+
+INSERT INTO customer ("name", email, "password", created_at, updated_at) VALUES('muslih', 'muslihfreshfreuit@gmail.com', 'angga123', 'now()', 'now()') RETURNING *;
