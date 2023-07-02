@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/AnggaArdhinata/indochat/src/libs"
 	"github.com/AnggaArdhinata/indochat/src/models"
 	"github.com/labstack/echo/v4"
 )
@@ -14,6 +15,15 @@ func GetOrder(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}
 	return c.JSON(http.StatusOK, result)
+}
+
+func GetXls(c echo.Context) error {
+	data, err := models.GetXls()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+	}
+	libs.GenerateXls(data)
+	return c.JSON(http.StatusOK, map[string]string{"message": "successfully generate xlsx file !"})
 }
 
 func StoreOrder(c echo.Context) error {

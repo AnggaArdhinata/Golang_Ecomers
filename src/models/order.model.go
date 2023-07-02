@@ -100,6 +100,63 @@ func GetOrder() (Response, error) {
 	return res, nil
 }
 
+func GetXls() ([]OrderJoin, error) {
+	var order OrderJoin
+	var arrOrderJoin []OrderJoin
+
+	con := db.CreateCon()
+
+	sqlStatement := `SELECT 
+	o.id AS order_id,
+    cust_id,
+    c.name AS customer_name,
+	c.email AS customer_email,
+    p.name AS product_name,
+	p.description,
+    cat.name AS category,
+    price,
+    o.discount_code,
+		CASE
+			WHEN discount_code = 'IC042'
+			AND cat.name = 'electronic' THEN price - (price * 5 / 100)
+			WHEN discount_code = 'IC003' THEN price - (price * 10 / 100)
+			WHEN discount_code = 'IC015' 
+			AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
+			ELSE price
+		END AS final_price,
+    o.status,
+    ispaid,
+    TO_CHAR(o.created_at, 'Day-Mon-YYYY') AS order_date,
+	o.created_at,
+    o.updated_at
+	FROM orders AS o
+    INNER JOIN customer AS c ON o.cust_id = c.id
+    INNER JOIN product AS p ON O.product_id = p.id
+    INNER JOIN categories AS cat ON p.category_id = cat.id
+	ORDER BY o.id DESC`
+
+	rows, err := con.Query(sqlStatement)
+	defer rows.Close()
+
+	if err != nil {
+		return arrOrderJoin, err
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&order.Id, &order.Cust_Id, &order.Cust_Name, &order.Cust_Email, &order.Product_Name,
+			&order.Description, &order.Category, &order.Price, &order.Discount_Code, &order.Final_Price,
+			&order.Status, &order.IsPaid, &order.Order_Date, &order.Created_At, &order.Updated_At)
+
+		if err != nil {
+			return arrOrderJoin, err
+		}
+
+		arrOrderJoin = append(arrOrderJoin, order)
+	}
+
+	return arrOrderJoin, nil
+}
+
 type OrderPayload struct {
 	Id          int
 	Email       string

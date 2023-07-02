@@ -89,6 +89,7 @@
 
 SELECT 
 	o.id AS order_id,
+	c.id AS cust_id,
     c.name AS customer_name,
 	c.email AS customer_email,
     p.name AS product_name,
@@ -101,11 +102,10 @@ SELECT
 			WHEN discount_code = 'IC015' 
 			AND TO_CHAR(o.created_at, 'DY') = 'SAT' OR TO_CHAR(o.created_at, 'DY') = 'SUN' THEN price - (price * 10 / 100)
 			ELSE price
-		END AS money) AS final_price,
+		END AS money)  AS final_price,
     ispaid
 	FROM orders AS o
     INNER JOIN customer AS c ON o.cust_id = c.id
     INNER JOIN product AS p ON O.product_id = p.id
     INNER JOIN categories AS cat ON p.category_id = cat.id
-    WHERE o.ispaid = FALSE
 	ORDER BY o.id DESC

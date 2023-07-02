@@ -83,11 +83,15 @@ func DeleteCustomer(c echo.Context) error {
 }
 
 func DeleteCustomerByEmail(c echo.Context) error {
+	var res models.Response
 	email := c.QueryParam("email")
 
 	checkEmail, err := models.GetCustomerByEmail(email)
 	if checkEmail.Status != 200 {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "email not found !"})
+		res.Status = http.StatusInternalServerError
+		res.Message = "internal server error"
+		res.Data = models.Msg{Msg: "email not found !"}
+		return c.JSON(http.StatusInternalServerError, res)
 	}
 	result, err := models.DeleteByEmail(email)
 	if err != nil {

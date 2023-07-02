@@ -35,6 +35,7 @@ func Init() *echo.Echo {
 	order.POST("", controllers.StoreOrder)
 	order.PUT("/:id", controllers.UpdateOrder)
 	order.GET("/verify/:id", controllers.UpdatePayment)
+	order.GET("/generate/xls", controllers.GetXls)
 	order.DELETE("/:id", controllers.DeleteOrder)
 
 	//? Customer End Point
